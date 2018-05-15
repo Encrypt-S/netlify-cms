@@ -283,11 +283,12 @@ class Backend {
       .then(() => entryObj.slug);
   }
 
-  persistMedia(file) {
-    const options = {
-      commitMessage: `Upload ${file.path}`,
+  persistMedia(file, options) {
+    const modifiedOptions = {
+      commitMessage: `Upload ${file.path}`, // Can be overwritten by options
+      ...options,
     };
-    return this.implementation.persistMedia(file, options);
+    return this.implementation.persistMedia(file, modifiedOptions);
   }
 
   deleteEntry(config, collection, slug) {

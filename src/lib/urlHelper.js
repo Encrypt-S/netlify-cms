@@ -46,7 +46,7 @@ export function sanitizeURI(str, { replacement = "", encoding = "unicode" } = {}
   if (!isString(replacement)) {
     throw new Error("`options.replacement` must be a string.");
   }
-  
+
   let validChar;
   if (encoding === "unicode") {
     validChar = validIRIChar;
@@ -66,13 +66,14 @@ export function sanitizeURI(str, { replacement = "", encoding = "unicode" } = {}
   return Array.from(str).map(char => (validChar(char) ? char : replacement)).join('');
 }
 
+
 export function sanitizeSlug(str, options = Map()) {
   const encoding = options.get('encoding', 'unicode');
   const stripDiacritics = options.get('clean_accents', false);
   const replacement = options.get('sanitize_replacement', '-');
 
   if (!isString(str)) { throw new Error("The input slug must be a string."); }
-  
+
   const sanitizedSlug = flow([
     ...(stripDiacritics ? [diacritics.remove] : []),
     partialRight(sanitizeURI, { replacement, encoding }),
@@ -88,3 +89,50 @@ export function sanitizeSlug(str, options = Map()) {
 
   return normalizedSlug;
 }
+
+export function slugFormatter(template = "{{slug}}", entryData, slugConfig) {
+  const date = new Date();
+
+  const getIdentifier = (entryData) => {
+    const validIdentifierFields = ["title", "path"];
+    const identifiers = validIdentifierFields.map((field) =>
+      entryData.find((_, key) => key.toLowerCase().trim() === field)
+    );
+
+    const identifier = identifiers.find(ident => ident !== undefined);
+
+    if (identifier === undefined) {
+      throw new Error("Collection must have a field name that is a valid entry identifier");
+    }
+
+    return identifier;
+  };
+
+  const slug = template.replace(/\{\{([^\}]+)\}\}/g, (_, field) => {
+    switch (field) {
+      case "year":
+        return date.getFullYear();
+      case "month":
+        return (`0${ date.getMonth() + 1 }`).slice(-2);
+      case "day":
+        return (`0${ date.getDate() }`).slice(-2);
+      case "hour":
+        return (`0${ date.getHours() }`).slice(-2);
+      case "minute":
+        return (`0${ date.getMinutes() }`).slice(-2);
+      case "second":
+        return (`0${ date.getSeconds() }`).slice(-2);
+      case "slug":
+        return getIdentifier(entryData).trim();
+      default:
+        return entryData.get(field, "").trim();
+    }
+  })
+                       // Convert slug to lower-case
+                       .toLocaleLowerCase()
+
+                       // Replace periods with dashes.
+                       .replace(/[.]/g, '-');
+
+  return sanitizeSlug(slug, slugConfig);
+};
