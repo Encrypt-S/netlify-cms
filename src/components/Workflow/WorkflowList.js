@@ -114,6 +114,7 @@ Please drag the card to the "Ready" column to enable publishing.`
                   <WorkflowCard
                     collectionName={collection}
                     title={entry.getIn(['data', 'title'])}
+                    isPublishing={entry.get('isPublishing')}
                     author={author}
                     authorLastChange={entry.getIn(['metaData', 'user'])}
                     body={entry.getIn(['data', 'body'])}

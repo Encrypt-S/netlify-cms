@@ -7,6 +7,7 @@ import Waypoint from 'react-waypoint';
 import { Modal, FileUploadButton } from 'UI';
 import { resolvePath, fileExtension } from 'Lib/pathHelper';
 import { changeDraftField } from 'Actions/entries';
+import { Loader } from 'UI';
 import {
   loadMedia as loadMediaAction,
   persistMedia as persistMediaAction,
@@ -240,6 +241,7 @@ class MediaLibrary extends React.Component {
       || (!hasSearchResults && 'No results.');
     const hasSelection = hasMedia && !isEmpty(selectedFile);
     const shouldShowButtonLoader = isPersisting || isDeleting;
+    const overlayStyle = { backgroundColor: 'rgba(255, 255, 255, 0.8)', position: 'absolute', top: 0, left: 0, height: '100%', width: '100%', zIndex: 2 }
 
     return (
       <Modal
@@ -301,6 +303,11 @@ class MediaLibrary extends React.Component {
         {
           shouldShowEmptyMessage
             ? <div className="nc-mediaLibrary-emptyMessage"><h1>{emptyMessage}</h1></div>
+            : null
+        }
+        {
+          isPersisting
+            ? <div style={overlayStyle}><Loader active>Uploading image</Loader></div>
             : null
         }
         <div className="nc-mediaLibrary-cardGrid-container" ref={ref => (this.scrollContainerRef = ref)}>

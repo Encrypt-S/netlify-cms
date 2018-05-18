@@ -4,7 +4,7 @@ import ImmutablePropTypes from 'react-immutable-proptypes';
 import c from 'classnames';
 import { Link } from 'react-router-dom';
 import { status } from 'Constants/publishModes';
-import { Icon, Dropdown, DropdownItem } from 'UI';
+import { Icon, Dropdown, DropdownItem, Loader } from 'UI';
 import { stripProtocol } from 'Lib/urlHelper';
 
 export default class EditorToolbar extends React.Component {
@@ -178,6 +178,7 @@ export default class EditorToolbar extends React.Component {
   render() {
     const {
       isPersisting,
+      isPublishing,
       onPersist,
       onPersistAndNew,
       enableSave,
@@ -193,9 +194,20 @@ export default class EditorToolbar extends React.Component {
     } = this.props;
     const disabled = !enableSave || isPersisting;
     const avatarUrl = user.get('avatar_url');
+    const overlayStyle = { backgroundColor: 'rgba(255, 255, 255, 0.8)', position: 'absolute', top: 0, left: 0, height: '100vh', width: '100vw', zIndex: 2 }
 
     return (
       <div className="nc-entryEditor-toolbar">
+        {
+          isPersisting
+            ? <div style={overlayStyle}><Loader active>Saving post</Loader></div>
+            : null
+        }
+        {
+          isPublishing
+            ? <div style={overlayStyle}><Loader active>Publishing post</Loader></div>
+            : null
+        }
         <Link to={`/collections/${collection.get('name')}`} className="nc-entryEditor-toolbar-backSection">
           <div className="nc-entryEditor-toolbar-backArrow">←</div>
           <div>

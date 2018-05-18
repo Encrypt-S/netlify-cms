@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import c from 'classnames';
 import { Link } from 'react-router-dom';
+import { Loader } from 'UI';
 
 const WorkflowCard = ({
   collectionName,
@@ -16,8 +17,16 @@ const WorkflowCard = ({
   onDelete,
   canPublish,
   onPublish,
-}) => (
+  isPublishing,
+}) => {
+  const overlayStyle = { backgroundColor: 'rgba(255, 255, 255, 0.8)', position: 'absolute', height: '100%', width: '100%', zIndex: 2 }
+  return (
   <div className="nc-workflow-card">
+    {
+    isPublishing
+      ? <div style={overlayStyle}><Loader active>Publishing post</Loader></div>
+      : null
+    }
     <Link to={editLink} className="nc-workflow-link">
       <div className="nc-workflow-card-collection">{collectionName}</div>
       <h2 className="nc-workflow-card-title">{title}</h2>
@@ -38,6 +47,6 @@ const WorkflowCard = ({
       </button>
     </div>
   </div>
-);
+)};
 
 export default WorkflowCard;
