@@ -121,7 +121,7 @@ export default class API {
           file: true,
         },
       };
-
+      console.log('storeMetadata', branchData, fileTree)
       return this.uploadBlob(fileTree[`${ key }.json`])
       .then(item => this.updateTree(branchData.sha, "/", fileTree))
       .then(changeTree => this.commit(`Updating “${ key }” metadata`, changeTree))
@@ -302,13 +302,17 @@ export default class API {
   }
 
   async editorialWorkflowGit(fileTree, entry, filesList, options) {
+    console.log('editorialWorkflowGit', fileTree, entry, filesList, options)
     const contentKey = (entry && entry.slug) || options.slug;
     const branchName = this.generateBranchName(contentKey);
 
     const metadata = await this.retrieveMetadata(contentKey);
     const unpublished = options.unpublished || (metadata && !!metadata.isMediaOnlyPR) || false; // Check if the meta is from a media only PR
 
+    console.log('unpublished', unpublished, options.unpublished);
+
     if (!unpublished) {
+      console.log('Tried to make new pr', branchName, options);
       // Open new editorial review workflow for this entry - Create new metadata and commit to new branch`
       let prResponse;
 
@@ -346,16 +350,25 @@ export default class API {
         });
       });
     } else {
+      console.log('Tried to update pr', branchName, options);
       // Entry is already on editorial review workflow - just update metadata and commit to existing branch
       let newHead;
       return this.getBranch(branchName)
-        .then(branchData => this.updateTree(branchData.commit.sha, "/", fileTree))
-        .then(changeTree => this.commit(options.commitMessage, changeTree))
+        .then(branchData => {
+          console.log('here1 - branchData', branchData, fileTree)
+          return this.updateTree(branchData.commit.sha, "/", fileTree)
+        })
+        .then(changeTree => {
+          console.log('here2 - changeTree', changeTree)
+          return this.commit(options.commitMessage, changeTree)
+        })
         .then(commit => {
+          console.log('here3 - commit', commit)
           newHead = commit;
           return this.retrieveMetadata(contentKey);
         })
         .then(metadata => {
+          console.log('here1 - metadata, entry', metadata, entry);
           const { title, description } = options.parsedData || {};
           const metadataFiles = get(metadata.objects, 'files', []);
           const files = [ ...metadataFiles, ...filesList ];
@@ -751,6 +764,7 @@ export default class API {
   }
 
   createTree(baseSha, tree) {
+    console.log('createTree', baseSha, tree);
     return this.request(`${ this.repoURL }/git/trees`, {
       method: "POST",
       body: JSON.stringify({ base_tree: baseSha, tree }),
@@ -776,6 +790,7 @@ export default class API {
   }
 
   createCommit(message, treeSha, parents, author, committer) {
+    console.log('createCommit', message, treeSha, parents, author, committer);
     return this.request(`${ this.repoURL }/git/commits`, {
       method: "POST",
       body: JSON.stringify({ message, tree: treeSha, parents, author, committer }),
